@@ -156,18 +156,12 @@ const catalogoCoresVelas = {
         preco: 6,
         titulo: 'Vela de Palito — Escolha a cor',
         cores: [
-            { nome: 'Laranja', hex: '#f0762b' },
-            { nome: 'Vermelha', hex: '#d92b2b' },
-            { nome: 'Verde', hex: '#1e8f3e' },
-            { nome: 'Azul', hex: '#1f5fbf' },
-            { nome: 'Branca', hex: '#f7f7f2' },
-            { nome: 'Vinho', hex: '#6e1b2b' },
             { nome: 'Rosa', hex: '#e87fb0' },
-            { nome: 'Magenta', hex: '#a4116f' },
-            { nome: 'Marrom', hex: '#6b3d20' },
-            { nome: 'Preta', hex: '#1a1a1a' },
+            { nome: 'Azul', hex: '#1f5fbf' },
+            { nome: 'Verde', hex: '#1e8f3e' },
             { nome: 'Amarela', hex: '#f2c60f' },
-            { nome: 'Azul Claro', hex: '#7ec6e6' },
+            { nome: 'Preta', hex: '#1a1a1a' },
+            { nome: 'Vermelha', hex: '#d92b2b' },
         ]
     },
     '7dias': {
@@ -175,12 +169,12 @@ const catalogoCoresVelas = {
         preco: 13.55,
         titulo: 'Vela de 7 Dias — Escolha a cor',
         cores: [
-            { nome: 'Vermelha', hex: '#c8272c' },
-            { nome: 'Branca', hex: '#f7f7f2' },
+            { nome: 'Rosa', hex: '#e87fb0' },
             { nome: 'Azul', hex: '#1e3f8f' },
             { nome: 'Verde', hex: '#1e6b34' },
             { nome: 'Amarela', hex: '#f2c60f' },
             { nome: 'Preta', hex: '#1a1a1a' },
+            { nome: 'Vermelha', hex: '#c8272c' },
         ]
     }
 };
