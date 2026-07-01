@@ -14,7 +14,7 @@
     <div class="header-inner">
         <div class="header-symbol">☽ ✦ ☾</div>
         <h1>Iyá Oxum<br><span class="name-accent">Elsa Muller</span></h1>
-        <p class="header-tagline">Produtos &amp; Atendimentos Espirituais de Alta Qualidade</p>
+        <p class="header-tagline">Produtos & Atendimentos Espirituais</p>
         <a href="#produtos" class="hero-cta">Conheça nossos produtos</a>
     </div>
     <div class="wave-bar">
@@ -97,17 +97,26 @@
                 <div class="article-icon">🃏</div>
                 <h3>Jogos de Carta</h3>
                 <p>Baralhos espirituais e oráculos para leitura e divinação, com arte tradicional e moderna de alta qualidade.</p>
-                <p class="preco">R$ 35 – R$ 180</p>
-                <button class="btn-dark" onclick="adicionarAoCarrinho('Jogos de Carta', 35)">🛒 Adicionar ao Carrinho</button>
+                <p class="preco">A partir de R$ 100</p>
+                <button class="btn-dark" onclick="adicionarAoCarrinho('Jogos de Carta', 100)">🛒 Adicionar ao Carrinho</button>
             </article>
 
             <article class="card reveal">
                 <div class="card-glow"></div>
-                <div class="article-icon">🕯️</div>
-                <h3>Velas Perfumadas</h3>
-                <p>Velas aromáticas para rituais e decoração, com aromas naturais que elevam a energia do ambiente.</p>
-                <p class="preco">R$ 25 – R$ 95</p>
-                <button class="btn-dark" onclick="adicionarAoCarrinho('Velas Perfumadas', 25)">🛒 Adicionar ao Carrinho</button>
+                <img src="./velas-palito.png" alt="Velas de palito coloridas" class="card-image">
+                <h3>Velas de Palito / Coloridas</h3>
+                <p>Velas de palito e coloridas para rituais, decoração e energização do ambiente com estética e presença marcante.</p>
+                <p class="preco">R$ 6,00 — por unidade</p>
+                <button class="btn-dark" onclick="abrirSeletorCor('palito')">🛒 Adicionar ao Carrinho</button>
+            </article>
+
+            <article class="card reveal">
+                <div class="card-glow"></div>
+                <img src="./vela-7-dias.png" alt="Velas de 7 dias em diversas cores acesas" class="card-image">
+                <h3>Vela de 7 Dias</h3>
+                <p>Vela de 7 dias para pedidos, orações e devoções — longa duração e concentração energética.</p>
+                <p class="preco">R$ 13,55</p>
+                <button class="btn-dark" onclick="abrirSeletorCor('7dias')">🛒 Adicionar ao Carrinho</button>
             </article>
 
         </div>
@@ -154,14 +163,10 @@
                     <span class="ci-icon">📞</span>
                     <div><strong>Telefone</strong><br>(11) 3456-7890</div>
                 </a>
-                <a href="mailto:contato@iyaoxumelsamuller.com.br" class="contato-item">
+                <a href="mailto:iyaoxumelsamuller@gmail.com" class="contato-item">
                     <span class="ci-icon">📧</span>
-                    <div><strong>Email</strong><br>contato@iyaoxumelsamuller.com.br</div>
+                    <div><strong>Email</strong><br>iyaoxumelsamuller@gmail.com</div>
                 </a>
-                <div class="contato-item">
-                    <span class="ci-icon">📍</span>
-                    <div><strong>Endereço</strong><br>Rua da Espiritualidade, 123<br>São Paulo – SP</div>
-                </div>
                 <a href="https://wa.me/5511999999999" target="_blank" class="contato-item">
                     <span class="ci-icon">💬</span>
                     <div><strong>WhatsApp</strong><br>Clique para conversar</div>
@@ -222,6 +227,18 @@
     💬
 </a>
 
+<!-- MODAL DE SELEÇÃO DE COR -->
+<div id="corModal" class="cor-modal">
+    <div class="cor-modal-content">
+        <button class="close-btn" onclick="fecharSeletorCor()">✕</button>
+        <h2 id="corModalTitulo">Escolha a cor</h2>
+        <p class="cor-modal-sub">Selecione a cor da sua vela antes de adicionar ao carrinho.</p>
+        <div id="corLeque" class="cor-leque"></div>
+        <p id="corSelecionadaTexto" class="cor-selecionada-texto"></p>
+        <button id="corConfirmarBtn" class="btn-checkout" onclick="confirmarCorEAdicionar()" disabled>Adicionar ao Carrinho</button>
+    </div>
+</div>
+
 <!-- MODAL DO CARRINHO -->
 <div id="cartModal" class="cart-modal">
     <div class="cart-modal-content">
@@ -267,11 +284,39 @@
                 <label for="checkoutTelefone">Telefone/WhatsApp</label>
                 <input type="tel" id="checkoutTelefone" placeholder="(11) 99999-9999">
             </div>
+            <div class="form-group">
+                <label for="checkoutCep">CEP de Entrega</label>
+                <input type="text" id="checkoutCep" placeholder="01310-100" maxlength="9" onchange="atualizarResumoCheckout()">
+            </div>
+        </div>
+
+        <div class="checkout-frete">
+            <h3>🚚 Opções de Entrega</h3>
+            <div class="frete-opcoes">
+                <button class="frete-btn" id="freteSedex" onclick="document.getElementById('metodoFrete').value='sedex'; atualizarResumoCheckout();">
+                    📦 Sedex - R$ 0,00
+                </button>
+                <button class="frete-btn" id="freteMotoboy" onclick="document.getElementById('metodoFrete').value='motoboy'; atualizarResumoCheckout();">
+                    🏍️ Motoboy - R$ 0,00
+                </button>
+            </div>
+            <input type="hidden" id="metodoFrete" value="sedex">
         </div>
 
         <div class="checkout-resumo">
             <h3>Resumo do Pedido</h3>
-            <p>Total a pagar: <strong id="checkoutTotal">R$ 0,00</strong></p>
+            <div class="resumo-linha">
+                <span>Subtotal:</span>
+                <span id="checkoutSubtotal">R$ 0,00</span>
+            </div>
+            <div class="resumo-linha">
+                <span>Frete:</span>
+                <span id="checkoutFrete">R$ 0,00</span>
+            </div>
+            <div class="resumo-total">
+                <span>Total:</span>
+                <span id="checkoutTotal">R$ 0,00</span>
+            </div>
         </div>
 
         <div class="checkout-pagamento">

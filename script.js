@@ -149,6 +149,110 @@ function adicionarAoCarrinho(nome, preco) {
     mostrarNotificacao(`${nome} adicionado ao carrinho!`);
 }
 
+// ─── SELETOR DE COR DAS VELAS ──────────────────────────────────────────────
+const catalogoCoresVelas = {
+    palito: {
+        nome: 'Vela de Palito',
+        preco: 6,
+        titulo: 'Vela de Palito — Escolha a cor',
+        cores: [
+            { nome: 'Laranja', hex: '#f0762b' },
+            { nome: 'Vermelha', hex: '#d92b2b' },
+            { nome: 'Verde', hex: '#1e8f3e' },
+            { nome: 'Azul', hex: '#1f5fbf' },
+            { nome: 'Branca', hex: '#f7f7f2' },
+            { nome: 'Vinho', hex: '#6e1b2b' },
+            { nome: 'Rosa', hex: '#e87fb0' },
+            { nome: 'Magenta', hex: '#a4116f' },
+            { nome: 'Marrom', hex: '#6b3d20' },
+            { nome: 'Preta', hex: '#1a1a1a' },
+            { nome: 'Amarela', hex: '#f2c60f' },
+            { nome: 'Azul Claro', hex: '#7ec6e6' },
+        ]
+    },
+    '7dias': {
+        nome: 'Vela de 7 Dias',
+        preco: 13.55,
+        titulo: 'Vela de 7 Dias — Escolha a cor',
+        cores: [
+            { nome: 'Vermelha', hex: '#c8272c' },
+            { nome: 'Branca', hex: '#f7f7f2' },
+            { nome: 'Azul', hex: '#1e3f8f' },
+            { nome: 'Verde', hex: '#1e6b34' },
+            { nome: 'Amarela', hex: '#f2c60f' },
+            { nome: 'Preta', hex: '#1a1a1a' },
+        ]
+    }
+};
+
+let corSelecionadaAtual = null;
+let produtoCorAtual = null;
+
+function abrirSeletorCor(tipo) {
+    const produto = catalogoCoresVelas[tipo];
+    if (!produto) return;
+
+    produtoCorAtual = tipo;
+    corSelecionadaAtual = null;
+
+    document.getElementById('corModalTitulo').textContent = produto.titulo;
+    document.getElementById('corSelecionadaTexto').textContent = '';
+
+    const leque = document.getElementById('corLeque');
+    leque.innerHTML = produto.cores.map(c => `
+        <button class="cor-opcao" data-cor="${c.nome}" onclick="selecionarCor('${c.nome}')">
+            <span class="cor-swatch" style="background:${c.hex}"></span>
+            <span>${c.nome}</span>
+        </button>
+    `).join('');
+
+    const btnConfirmar = document.getElementById('corConfirmarBtn');
+    btnConfirmar.disabled = true;
+
+    const modal = document.getElementById('corModal');
+    modal.classList.add('open');
+}
+
+function selecionarCor(cor) {
+    corSelecionadaAtual = cor;
+
+    document.querySelectorAll('#corLeque .cor-opcao').forEach(btn => {
+        btn.classList.toggle('selecionada', btn.dataset.cor === cor);
+    });
+
+    document.getElementById('corSelecionadaTexto').textContent = `Cor selecionada: ${cor}`;
+    document.getElementById('corConfirmarBtn').disabled = false;
+}
+
+function confirmarCorEAdicionar() {
+    if (!produtoCorAtual || !corSelecionadaAtual) return;
+
+    const produto = catalogoCoresVelas[produtoCorAtual];
+    const nomeCompleto = `${produto.nome} — ${corSelecionadaAtual}`;
+
+    adicionarAoCarrinho(nomeCompleto, produto.preco);
+    fecharSeletorCor();
+}
+
+function fecharSeletorCor() {
+    const modal = document.getElementById('corModal');
+    modal.classList.remove('open');
+    produtoCorAtual = null;
+    corSelecionadaAtual = null;
+}
+
+// Fecha modal de cor ao clicar fora
+document.addEventListener('DOMContentLoaded', () => {
+    const corModal = document.getElementById('corModal');
+    if (corModal) {
+        corModal.addEventListener('click', (e) => {
+            if (e.target === corModal) {
+                fecharSeletorCor();
+            }
+        });
+    }
+});
+
 // Remove produto do carrinho
 function removerDoCarrinho(id) {
     carrinho = carrinho.filter(item => item.id !== id);
@@ -275,6 +379,14 @@ function inicializarCarrinho() {
             }
         });
     }
+    
+    // Setup do input de CEP
+    const inputCep = document.getElementById('checkoutCep');
+    if (inputCep) {
+        inputCep.addEventListener('input', (e) => {
+            e.target.value = formatarCEP(e.target.value);
+        });
+    }
 }
 
 // ─── WHATSAPP HELPER ────────────────────────────────────────────────────────
@@ -304,6 +416,81 @@ function enviarMensagem() {
     setTimeout(() => { fb.textContent = ''; fb.className = 'form-feedback'; }, 5000);
 }
 
+// ─── SISTEMA DE FRETE ─────────────────────────────────────────────────────
+// Tabela de zonas de São Paulo para Sedex
+const tabelaSedex = {
+    'zona-centro': { nome: 'Centro SP', cep_inicio: 1000, cep_fim: 1999, preco: 18 },
+    'zona-norte': { nome: 'Zona Norte', cep_inicio: 2000, cep_fim: 2999, preco: 22 },
+    'zona-sul': { nome: 'Zona Sul', cep_inicio: 4000, cep_fim: 5999, preco: 22 },
+    'zona-leste': { nome: 'Zona Leste', cep_inicio: 3000, cep_fim: 3999, preco: 24 },
+    'zona-oeste': { nome: 'Zona Oeste', cep_inicio: 6000, cep_fim: 6999, preco: 20 },
+    'abc': { nome: 'Grande ABC', cep_inicio: 9000, cep_fim: 9999, preco: 28 },
+};
+
+// Coordenadas aproximadas do centro de São Paulo (origem do Motoboy)
+const lojaOrigin = { lat: -23.5505, lng: -46.6333 };
+
+// Função para extrair os 5 primeiros dígitos do CEP
+function getCepZona(cep) {
+    const cepNum = parseInt(cep.replace(/\D/g, ''));
+    const primeiroDigito = Math.floor(cepNum / 10000);
+    
+    for (const [key, zona] of Object.entries(tabelaSedex)) {
+        if (cepNum >= zona.cep_inicio * 100 && cepNum <= zona.cep_fim * 100) {
+            return { key, zona };
+        }
+    }
+    
+    return { key: 'abc', zona: tabelaSedex['abc'] };
+}
+
+// Função para calcular frete Sedex
+function calcularFreteSedex(cep) {
+    const { zona } = getCepZona(cep);
+    return zona.preco;
+}
+
+// Função para calcular frete Motoboy (por km aproximado baseado em zona)
+function calcularFreteMotoboy(cep) {
+    const distanciaKmPorZona = {
+        'zona-centro': 3,
+        'zona-norte': 8,
+        'zona-sul': 8,
+        'zona-leste': 10,
+        'zona-oeste': 6,
+        'abc': 25,
+    };
+    
+    const { key } = getCepZona(cep);
+    const distancia = distanciaKmPorZona[key] || 10;
+    const valorPorKm = 3.50;
+    const taxaBase = 10;
+    
+    return Math.round((taxaBase + (distancia * valorPorKm)) * 100) / 100;
+}
+
+// Função para atualizar opções de frete
+function atualizarOpcoesFretes(cep) {
+    if (!cep || cep.length < 8) {
+        mostrarNotificacao('⚠️ CEP inválido!');
+        return null;
+    }
+    
+    const sedex = calcularFreteSedex(cep);
+    const motoboy = calcularFreteMotoboy(cep);
+    
+    return { sedex, motoboy };
+}
+
+// Função para formatar CEP com máscara
+function formatarCEP(cep) {
+    cep = cep.replace(/\D/g, '');
+    if (cep.length > 5) {
+        cep = cep.slice(0, 5) + '-' + cep.slice(5, 8);
+    }
+    return cep;
+}
+
 // ─── CHECKOUT ───────────────────────────────────────────────────────────────
 function abrirCheckout() {
     if (carrinho.length === 0) {
@@ -311,12 +498,10 @@ function abrirCheckout() {
         return;
     }
     
-    const total = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0) + (total > 100 ? 0 : 15);
     const checkoutModal = document.getElementById('checkoutModal');
-    
     if (checkoutModal) {
         checkoutModal.classList.add('open');
-        document.getElementById('checkoutTotal').textContent = `R$ ${total.toFixed(2)}`;
+        atualizarResumoCheckout();
     }
 }
 
@@ -327,22 +512,61 @@ function fecharCheckout() {
     }
 }
 
-function finalizarCompra(metodo) {
-    const nome = document.getElementById('checkoutNome').value.trim();
-    const email = document.getElementById('checkoutEmail').value.trim();
-    const telefone = document.getElementById('checkoutTelefone').value.trim();
+// Atualiza resumo do checkout com opções de frete
+function atualizarResumoCheckout() {
+    const cep = document.getElementById('checkoutCep')?.value;
+    const metodoFrete = document.getElementById('metodoFrete')?.value || 'sedex';
     
-    if (!nome || !email || !telefone) {
+    const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
+    
+    let frete = 0;
+    
+    if (cep && cep.length >= 8) {
+        const fretes = atualizarOpcoesFretes(cep);
+        if (fretes) {
+            frete = metodoFrete === 'motoboy' ? fretes.motoboy : fretes.sedex;
+            
+            // Atualizar opções de frete visíveis
+            const sedexBtn = document.getElementById('freteSedex');
+            const motoboyBtn = document.getElementById('freteMotoboy');
+            
+            if (sedexBtn) sedexBtn.textContent = `📦 Sedex - R$ ${fretes.sedex.toFixed(2)}`;
+            if (motoboyBtn) motoboyBtn.textContent = `🏍️ Motoboy - R$ ${fretes.motoboy.toFixed(2)}`;
+        }
+    }
+    
+    const total = subtotal + frete;
+    
+    const resumoSubtotal = document.getElementById('checkoutSubtotal');
+    const resumoFrete = document.getElementById('checkoutFrete');
+    const resumoTotal = document.getElementById('checkoutTotal');
+    
+    if (resumoSubtotal) resumoSubtotal.textContent = `R$ ${subtotal.toFixed(2)}`;
+    if (resumoFrete) resumoFrete.textContent = `R$ ${frete.toFixed(2)}`;
+    if (resumoTotal) resumoTotal.textContent = `R$ ${total.toFixed(2)}`;
+}
+
+function finalizarCompra(metodo) {
+    const nome = document.getElementById('checkoutNome')?.value.trim();
+    const email = document.getElementById('checkoutEmail')?.value.trim();
+    const telefone = document.getElementById('checkoutTelefone')?.value.trim();
+    const cep = document.getElementById('checkoutCep')?.value.trim();
+    const metodoFrete = document.getElementById('metodoFrete')?.value || 'sedex';
+    
+    if (!nome || !email || !telefone || !cep) {
         mostrarNotificacao('⚠️ Preencha todos os campos!');
         return;
     }
     
     const itemsTexto = carrinho.map(item => `${item.quantidade}x ${item.nome} - R$ ${(item.preco * item.quantidade).toFixed(2)}`).join('\n');
     const subtotal = carrinho.reduce((acc, item) => acc + (item.preco * item.quantidade), 0);
-    const frete = subtotal > 100 ? 0 : 15;
+    const fretes = atualizarOpcoesFretes(cep);
+    const frete = metodoFrete === 'motoboy' ? fretes.motoboy : fretes.sedex;
     const total = subtotal + frete;
     
-    let mensagem = `Olá! Gostaria de fazer um pedido:\n\n${itemsTexto}\n\nSubtotal: R$ ${subtotal.toFixed(2)}\nFrete: R$ ${frete.toFixed(2)}\nTotal: R$ ${total.toFixed(2)}\n\nMétodo: ${metodo}\nNome: ${nome}\nEmail: ${email}\nTelefone: ${telefone}`;
+    const nomeMetodo = metodoFrete === 'motoboy' ? '🏍️ Motoboy' : '📦 Sedex';
+    
+    let mensagem = `Olá! Gostaria de fazer um pedido:\n\n${itemsTexto}\n\nSubtotal: R$ ${subtotal.toFixed(2)}\nFrete (${nomeMetodo}): R$ ${frete.toFixed(2)}\nTotal: R$ ${total.toFixed(2)}\n\nDados da Entrega:\nNome: ${nome}\nEmail: ${email}\nTelefone: ${telefone}\nCEP: ${cep}\nMétodo: ${nomeMetodo}`;
     
     const msg = encodeURIComponent(mensagem);
     window.open(`https://wa.me/5511999999999?text=${msg}`, '_blank');

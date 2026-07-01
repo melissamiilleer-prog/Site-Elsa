@@ -414,6 +414,14 @@ nav a:hover::after { width: 100%; }
     display: block;
 }
 
+.card-image {
+    width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    margin-bottom: 1rem;
+    display: block;
+}
+
 .card h3 {
     font-size: 1.15rem;
     color: var(--blue-deep);
@@ -869,6 +877,100 @@ footer {
     transform: translateY(0);
 }
 
+/* MODAL SELEÇÃO DE COR */
+.cor-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1150;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition);
+}
+.cor-modal.open {
+    opacity: 1;
+    pointer-events: all;
+}
+.cor-modal-content {
+    background: var(--cream);
+    border-radius: var(--radius);
+    padding: 2rem;
+    max-width: 460px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    text-align: center;
+}
+.cor-modal-content > .close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+.cor-modal-content h2 {
+    color: var(--ink);
+    margin-bottom: 0.4rem;
+    font-size: 1.3rem;
+}
+.cor-modal-sub {
+    color: #777;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+.cor-leque {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.5rem 0 1rem;
+}
+.cor-opcao {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+}
+.cor-swatch {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: var(--transition);
+}
+.cor-opcao span {
+    font-size: 0.75rem;
+    color: var(--ink);
+}
+.cor-opcao:hover .cor-swatch {
+    transform: scale(1.1);
+}
+.cor-opcao.selecionada .cor-swatch {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-pale), 0 2px 6px rgba(0,0,0,0.25);
+}
+.cor-selecionada-texto {
+    min-height: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 1rem;
+}
+#corConfirmarBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* MODAL CARRINHO */
 .cart-modal {
     position: fixed;
@@ -1217,6 +1319,60 @@ footer {
 .btn-submit:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
+}
+
+/* ── CHECKOUT FRETE ── */
+.checkout-frete {
+    background: var(--white);
+    padding: 1.5rem;
+    border: 2px solid var(--blue-pale);
+    border-radius: var(--radius);
+    margin-bottom: 1.5rem;
+}
+
+.checkout-frete h3 {
+    color: var(--blue-deep);
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.frete-opcoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.frete-btn {
+    padding: 1rem;
+    border: 2px solid var(--blue-pale);
+    border-radius: var(--radius);
+    background: var(--white);
+    color: var(--ink);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.frete-btn:hover {
+    border-color: var(--blue);
+    background: var(--blue-pale);
+    transform: translateY(-2px);
+}
+
+.resumo-linha {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+    color: var(--ink);
+}
+
+.resumo-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 2px solid var(--gold-pale);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--gold);
 }
 
 /* RESPONSIVO CARRINHO */
